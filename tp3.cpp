@@ -26,20 +26,26 @@ int main(int argc, char* argv[]){
     str_tok(Linha," ",aux);
     J = std::stoi(aux);
 
+    /* Execução */
     Grafo G(N);
     G.inicializa_grafo(N, I, J);
-    G.imprime_grafo();
+    // G.imprime_grafo();
     G.pre_colore(N, arq);
 
-    std::cout << std::endl;
-    for (int i = 0; i < N*N; i++){
-        std::cout << "i = " << i << "; C = " << G.is_colored(i) << "; G = " << G.saturated_degree(i) << std::endl;
-    }
+    Tabuleiro resultado;
+    bool correto = G.resolve_sudoku(resultado);
 
-    std::cout << std::endl;
-    std::cout << "MAX = " << G.max_sat_degree() << std::endl;
-    /* Execução */
-    // TODO
+    if (correto == true){
+        std::cout << "solução" << std::endl;
+    }else{
+        std::cout << "sem solução" << std::endl;
+    }
+    for (int i = 0; i < N; i++){
+        for (int j = 0; j < N; j++){
+            std::cout << resultado[i][j] << " ";
+        }
+        std::cout << std::endl;
+    }
     
     arq.close();
     return 0;

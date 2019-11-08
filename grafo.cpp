@@ -1,6 +1,7 @@
 #include "grafo.h"
 #include <iostream>
 #include <fstream>
+#include <algorithm> //Para a diferença entre set's
 
 /* Particiona a string 'str' pelo delimitador 'delimiter' e guarda o token particionado 
 na string 'token' (o token é removido da string original); Se não encontrar o token, 
@@ -21,6 +22,9 @@ bool str_tok(std::string& str, std::string delimiter, std::string& token){
 
 /* O(N^2) */
 Grafo::Grafo(int N){
+    this->n_coloridos = 0;
+    this->Vertices = N*N;
+    this->N = N;
     for (int i = 0; i < N*N; i++){
         std::set<int> linha_grafo;
         lista_adjacencias.push_back(linha_grafo);
@@ -109,6 +113,7 @@ void Grafo::pre_colore(int N, std::ifstream& arq){
                 continue;
             }
             ColorMap[k] = cell;
+            n_coloridos++;
             k++;
         }
     }
@@ -130,7 +135,7 @@ int Grafo::saturated_degree(int idx){
 }
 
 /* O(N^3) = N*O(N^2) */
-/* Retorna o índice do vértice com maior grau de saturação no grafo */
+/* Retorna o índice do vértice (ainda não colorido) com maior grau de saturação no grafo */
 int Grafo::max_sat_degree(){
     auto it = lista_adjacencias.begin();
     int i = 0;
@@ -138,6 +143,13 @@ int Grafo::max_sat_degree(){
     int idx_max = -1;
 
     while(it != lista_adjacencias.end()){
+        if (is_colored(i)){
+            /* Ignorar os já coloridos */
+            it++;
+            i++;
+            continue;
+        }
+
         int grau_i = saturated_degree(i);
         if (grau_i > max){
             idx_max = i;
@@ -149,8 +161,121 @@ int Grafo::max_sat_degree(){
     return idx_max;
 }
 
+/* Colore o vértice de índice 'idx' com o menor número possível;
+Se não for possível colori-lo com alguma das 9 cores (números), isto é, o programa
+não conseguiu achar a solução com a estratégia gulosa ou o sudoku não tem solução,
+retorna 'false'. Se foi possível, retorna 'true' */
+bool Grafo::colore_asc(int idx){
+    if (is_colored(idx)) return false;
+    std::set<int> Todas_cores;
+    for (int i = 0; i < N; i++){
+        Todas_cores.insert(i+1);
+    }
+    std::set<int> Cores_vizinhos;
+
+    auto it = lista_adjacencias[idx].begin();
+    while(it != lista_adjacencias[idx].end()){
+        int cor_vizinho = ColorMap[*it];
+        if (cor_vizinho != 0){
+            Cores_vizinhos.insert(cor_vizinho);
+        }
+        it++;
+    }
+
+    std::set<int> Cores_disponiveis;
+    std::set_difference(Todas_cores.begin(), Todas_cores.end(), \
+                        Cores_vizinhos.begin(), Cores_vizinhos.end(), \
+                        std::inserter(Cores_disponiveis, Cores_disponiveis.end()));
+    if (Cores_disponiveis.empty()){
+        /* Não achou cor válida para ser o vértice seja colorido */
+        return false;
+    }
+    int cor = *Cores_disponiveis.begin();
+    ColorMap[idx] = cor;
+    n_coloridos++;
+    return true;
+}
+
+/* Colore o vértice de índice 'idx' com o maior número possível;
+Se não for possível colori-lo com alguma das 9 cores (números), isto é, o programa
+não conseguiu achar a solução com a estratégia gulosa ou o sudoku não tem solução,
+retorna 'false'. Se foi possível, retorna 'true' */
+bool Grafo::colore_desc(int idx){
+    if (is_colored(idx)) return false;
+    std::set<int> Todas_cores;
+    for (int i = 0; i < N; i++){
+        Todas_cores.insert(i+1);
+    }
+    std::set<int> Cores_vizinhos;
+
+    auto it = lista_adjacencias[idx].begin();
+    while(it != lista_adjacencias[idx].end()){
+        int cor_vizinho = ColorMap[*it];
+        if (cor_vizinho != 0){
+            Cores_vizinhos.insert(cor_vizinho);
+        }
+        it++;
+    }
+
+    std::set<int> Cores_disponiveis;
+    std::set_difference(Todas_cores.begin(), Todas_cores.end(), \
+                        Cores_vizinhos.begin(), Cores_vizinhos.end(), \
+                        std::inserter(Cores_disponiveis, Cores_disponiveis.end()));
+    if (Cores_disponiveis.empty()){
+        /* Não achou cor válida para ser o vértice seja colorido */
+        return false;
+    }
+    int cor = *(Cores_disponiveis.rbegin());
+    ColorMap[idx] = cor;
+    n_coloridos++;
+    return true;
+}
+
 /* Custo constante: acesso a vector */
 /* Retorna se o vértice de índice 'idx' já foi colorido */
 bool Grafo::is_colored(int idx){
     return (ColorMap[idx] != 0);
 }
+
+/* O(N^2) */
+void Grafo::remonta_tabuleiro(Tabuleiro& result){
+    int N2 = Vertices;
+
+    for (int i = 0; i < N; i++){
+        std::vector<int> linha;
+        result.push_back(linha);
+        for (int j = 0; j < N; j++){
+            result[i].push_back(-1);
+        }
+    }
+
+    for (int i = 0; i < N2; i++){
+        int quo = i / N;
+        int r = i % N;
+        
+        result[quo][r] = ColorMap[i];
+    }
+}
+
+bool Grafo::resolve_sudoku(Tabuleiro& result){
+    bool possivel = false;
+    std::vector<int> Copia_ColorMap = ColorMap;
+    while(n_coloridos != Vertices){
+        int idx = max_sat_degree();
+        possivel = colore_asc(idx);
+        if (possivel == false) break;
+    }
+
+    if (possivel == false){
+        ColorMap = Copia_ColorMap;
+        while(n_coloridos != Vertices){
+            int idx = max_sat_degree();
+            possivel = colore_desc(idx);
+            if (possivel == false) break;
+        }
+    }
+
+    remonta_tabuleiro(result);
+    return possivel;
+}
+
