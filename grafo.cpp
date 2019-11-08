@@ -260,6 +260,7 @@ void Grafo::remonta_tabuleiro(Tabuleiro& result){
 bool Grafo::resolve_sudoku(Tabuleiro& result){
     bool possivel = false;
     std::vector<int> Copia_ColorMap = ColorMap;
+    int n_coloridos_inicial = n_coloridos;
     while(n_coloridos != Vertices){
         int idx = max_sat_degree();
         possivel = colore_asc(idx);
@@ -268,6 +269,7 @@ bool Grafo::resolve_sudoku(Tabuleiro& result){
 
     if (possivel == false){
         ColorMap = Copia_ColorMap;
+        n_coloridos = n_coloridos_inicial;
         while(n_coloridos != Vertices){
             int idx = max_sat_degree();
             possivel = colore_desc(idx);
