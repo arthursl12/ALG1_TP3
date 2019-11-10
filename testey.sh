@@ -1,11 +1,11 @@
 #!/bin/bash
 
-FILES=/tst/*
+FILES=/dataset/*
 
-for f in tst/*.txt
+for f in dataset/*.txt
 do
     x=$f
     y=${x%.}
     declare name=${y##*/}
-    ./tp2 tst/$name
+    ./tp3 dataset/$name
 done
