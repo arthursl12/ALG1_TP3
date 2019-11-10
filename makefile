@@ -36,13 +36,13 @@ $(OBJDIR): build/%.o : %.cpp
 $(TGTDIR): $(OBJDIR)
 	@echo ""
 	@echo COMPILANDO MAIN
-	@mkdir -p bin
 	$(CC) $(INC) $(CFLAGS) $(OBJDIR) $(TARGET).cpp -o $(TARGET)
 
 
 tester: $(TESTS)
 $(TESTS): tests/test_%.o : tests/test_%.cpp
 	$(shell mkdir -p tests)
+	$(shell mkdir -p bin)
 	@echo ""
 	@echo TESTE: $@
 	$(CC) $(INC) -I.. $(T_CFLAGS) tests/$@ $(OBJDIR) -o bin/$@.exe
