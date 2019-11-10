@@ -20,7 +20,6 @@ bool str_tok(std::string& str, std::string delimiter, std::string& token){
     return true;
 }
 
-/* O(N^2) */
 Grafo::Grafo(int N){
     this->n_coloridos = 0;
     this->Vertices = N*N;
@@ -34,7 +33,6 @@ Grafo::Grafo(int N){
     }
 }
 
-/* O(N^4): Loop de N^2 fazendo N^2 a cada iteração */
 /* Cria as arestas do grafo seguindo o princípio de que se duas posições no 
 tabuleiro não puderem ter o mesmo número no Sudoku (mesma cor no grafo), esses
 vértices são conectados por uma aresta. Um vértice deve estar conectado com 
@@ -97,7 +95,6 @@ void Grafo::imprime_grafo(){
     }
 }
 
-/* O(N^2): passa por todo o tabuleiro uma vez */
 /* Dado o tabuleiro de sudoku de entrada, colore as posições dadas */
 /* Cores: 1 a 9; 0 é sem cor */
 void Grafo::pre_colore(int N, std::ifstream& arq){
@@ -119,7 +116,6 @@ void Grafo::pre_colore(int N, std::ifstream& arq){
     }
 }
 
-/* Linear na quantidade de vizinhos de 'idx' */
 /* Retorna quantos vértices vizinhos do vértice de índice 'idx' já estão 
 coloridos (numerados) */
 int Grafo::saturated_degree(int idx){
@@ -134,7 +130,6 @@ int Grafo::saturated_degree(int idx){
     return grau;
 }
 
-/* O(N^3) = N*O(N^2) */
 /* Retorna o índice do vértice (ainda não colorido) com maior grau de saturação no grafo */
 int Grafo::max_sat_degree(){
     auto it = lista_adjacencias.begin();
@@ -231,13 +226,11 @@ bool Grafo::colore_desc(int idx){
     return true;
 }
 
-/* Custo constante: acesso a vector */
 /* Retorna se o vértice de índice 'idx' já foi colorido */
 bool Grafo::is_colored(int idx){
     return (ColorMap[idx] != 0);
 }
 
-/* O(N^2) */
 void Grafo::remonta_tabuleiro(Tabuleiro& result){
     int N2 = Vertices;
 
