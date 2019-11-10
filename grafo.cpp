@@ -257,6 +257,7 @@ void Grafo::remonta_tabuleiro(Tabuleiro& result){
     }
 }
 
+/* Algoritmo baseado em 'www.codeproject.com/Articles/801268/A-Sudoku-Solver-using-Graph-Coloring' */
 bool Grafo::resolve_sudoku(Tabuleiro& result){
     bool possivel = false;
     std::vector<int> Copia_ColorMap = ColorMap;
